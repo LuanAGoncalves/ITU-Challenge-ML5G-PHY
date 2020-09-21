@@ -18,9 +18,9 @@ def processCoordinates(data_folder, dataset):
     print("Generating Beams ...")
     csvHand = CSVHandler()
 
-    inputDataDir = data_folder + "/coord_input/"
+    inputDataDir = data_folder
     coordFileName = "CoordVehiclesRxPerScene_s008"
-    coordURL = dataset + "/" + coordFileName + ".csv"
+    coordURL = dataset + coordFileName + ".csv"
 
     coordinates_train, coordinates_test = csvHand.getCoord(coordURL, 1564)
 

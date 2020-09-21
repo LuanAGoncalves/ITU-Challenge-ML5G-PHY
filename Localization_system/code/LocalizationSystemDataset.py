@@ -11,6 +11,7 @@ import os
 from builtins import print
 
 from mimo_channels import getNarrowBandULAMIMOChannel, getDFTOperatedChannel
+from processCoordinates import processCoordinates
 import csv
 import h5py
 from math import ceil
@@ -25,7 +26,7 @@ def isfloat(value):
         return False
 
 
-def dataset_generation(cfg_file, limit=0):
+def dataset_generation(cfg_file):
     tree = ET.parse(cfg_file)
     root = tree.getroot()
 
@@ -38,6 +39,8 @@ def dataset_generation(cfg_file, limit=0):
             cfg[item.attrib["name"]] = float(item.text)
         else:
             cfg[item.attrib["name"]] = item.text
+
+    limit = processCoordinates(cfg["data_folder"], cfg["dataset"])
 
     if not os.path.exists(cfg["outputFolder"]):
         os.makedirs(cfg["outputFolder"])
@@ -193,9 +196,10 @@ def dataset_generation(cfg_file, limit=0):
         np.savez(npz_name, receiverPositions=receiverPositions)
         print('Saved file ', npz_name) """
 
-    print("allutputs shape = ", allOutputs.shape)
+    # print("alloutputs shape = ", allOutputs.shape)
     mimoChannels_test = allOutputs[limit:]
     mimoChannels_train = allOutputs[:limit]
+    print("alloutputs shape = ", allOutputs.shape, "train = ", mimoChannels_train.shape, "test = ", mimoChannels_test.shape)
 
     npz_name_train = cfg["outputFolder"] + "mimoChannels_train" + ".npz"
     np.savez(npz_name_train, output_classification=mimoChannels_train)

@@ -1,9 +1,9 @@
 <data>
-    <item name="data_folder">../../../Raymobtime_datasets/s008/</item>
-    <item name="outputFolder">../../../Raymobtime_datasets/s008/mimoChannels/s</item>
-    <item name="dataset">../../../Raymobtime_datasets/s008/</item>
-    <item name="inputPath">../../../Raymobtime_datasets/s008/ray_tracing_data_s008_carrier60GHz/rosslyn_mobile_60GHz_ts0.1s_V_Lidar_e</item>
-    <item name="insiteCSVFile">../../../Raymobtime_datasets/s008/CoordVehiclesRxPerScene_s008.csv</item>
+    <item name="data_folder">../../../datasets/Raymobtime_datasets/s008/</item>
+    <item name="outputFolder">../../../datasets/Raymobtime_datasets/s008/mimoChannels/</item>
+    <item name="dataset">../../../datasets/Raymobtime_datasets/s008/</item>
+    <item name="inputPath">../../../datasets/Raymobtime_datasets/s008/ray_tracing_data_s008_carrier60GHz/rosslyn_mobile_60GHz_ts0.1s_V_Lidar_e</item>
+    <item name="insiteCSVFile">../../../datasets/Raymobtime_datasets/s008/CoordVehiclesRxPerScene_s008.csv</item>
     <item name="normalizedAntDistance">0.5</item>
     <item name="angleWithArrayNormal">0</item>
     <item name="number_Tx_antennas">32</item>
