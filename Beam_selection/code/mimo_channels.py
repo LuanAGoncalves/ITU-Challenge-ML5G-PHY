@@ -1,7 +1,7 @@
-#Script context use	: This script uses Raymotime data (https://www.lasse.ufpa.br/raymobtime/) in the context of the UFPA - ITU Artificial Intelligence/Machine Learning in 5G Challenge (http://ai5gchallenge.ufpa.br/).
-#Author       		: Ailton Oliveira, Aldebaro Klautau, Arthur Nascimento, Diego Gomes, Jamelly Ferreira, Walter Frazão
-#Email          	: ml5gphy@gmail.com                                          
-#License		: This script is distributed under "Public Domain" license.
+# Script context use	: This script uses Raymotime data (https://www.lasse.ufpa.br/raymobtime/) in the context of the UFPA - ITU Artificial Intelligence/Machine Learning in 5G Challenge (http://ai5gchallenge.ufpa.br/).
+# Author       		: Ailton Oliveira, Aldebaro Klautau, Arthur Nascimento, Diego Gomes, Jamelly Ferreira, Walter Frazão
+# Email          	: ml5gphy@gmail.com
+# License		: This script is distributed under "Public Domain" license.
 ###################################################################
 
 import os
@@ -9,18 +9,21 @@ import datetime
 
 import numpy as np
 
-def calc_omega(elevationAngles, azimuthAngles, normalizedAntDistance = 0.5):
+
+def calc_omega(elevationAngles, azimuthAngles, normalizedAntDistance=0.5):
     sinElevations = np.sin(elevationAngles)
     omegax = 2 * np.pi * normalizedAntDistance * sinElevations * np.cos(azimuthAngles)
     omegay = 2 * np.pi * normalizedAntDistance * sinElevations * np.sin(azimuthAngles)
     return np.matrix((omegax, omegay))
 
+
 def calc_vec_i(i, omega, antenna_range):
-    print('a ', omega[:, i])
-    print('b ', omega[:, i].shape)
+    print("a ", omega[:, i])
+    print("b ", omega[:, i].shape)
     vec = np.exp(1j * omega[:, i] * antenna_range)
-    print('c ', np.matrix(np.kron(vec[1], vec[0])).shape)
+    print("c ", np.matrix(np.kron(vec[1], vec[0])).shape)
     return np.matrix(np.kron(vec[1], vec[0]))
+
 
 def dft_codebook(dim):
     seq = np.matrix(np.arange(dim))
@@ -28,9 +31,20 @@ def dft_codebook(dim):
     w = np.exp(-1j * 2 * np.pi * mat / dim)
     return w
 
-def getNarrowBandUPAMIMOChannel(departureElevation,departureAzimuth,arrivalElevation,arrivalAzimuth, p_gainsdB,
-                                pathPhases, number_Tx_antennasX, number_Tx_antennasY, number_Rx_antennasX,
-                                number_Rx_antennasY, normalizedAntDistance=0.5):
+
+def getNarrowBandUPAMIMOChannel(
+    departureElevation,
+    departureAzimuth,
+    arrivalElevation,
+    arrivalAzimuth,
+    p_gainsdB,
+    pathPhases,
+    number_Tx_antennasX,
+    number_Tx_antennasY,
+    number_Rx_antennasX,
+    number_Rx_antennasY,
+    normalizedAntDistance=0.5,
+):
     """Uses UPAs at both TX and RX.
     Will assume that all 4 normalized distances (Tx and Rx, x and y) are the same.
     """
@@ -42,25 +56,27 @@ def getNarrowBandUPAMIMOChannel(departureElevation,departureAzimuth,arrivalEleva
     arrivalAzimuth = np.deg2rad(arrivalAzimuth)
 
     numRays = np.shape(departureElevation)[0]
-    #number_Rx_antennas is the total number of antenna elements of the array, idem Tx
+    # number_Rx_antennas is the total number of antenna elements of the array, idem Tx
     H = np.matrix(np.zeros((number_Rx_antennas, number_Tx_antennas)))
 
     path_gain = np.power(10, p_gainsdB / 10)
 
-    #generate uniformly distributed random phase in radians
+    # generate uniformly distributed random phase in radians
     if pathPhases is None:
-        pathPhases = 2*np.pi * np.random.rand(len(path_gain))
+        pathPhases = 2 * np.pi * np.random.rand(len(path_gain))
     else:
-        #convert from degrees to radians the phase obtained with simulator (InSite)
+        # convert from degrees to radians the phase obtained with simulator (InSite)
         pathPhases = np.deg2rad(pathPhases)
 
-    #include phase information, converting gains in complex-values
+    # include phase information, converting gains in complex-values
     path_complexGains = path_gain * np.exp(1j * pathPhases)
 
     # recall that in the narrowband case, the time-domain H is the same as the
     # frequency-domain H
     # Each vector below has the x and y values for each ray. Example 2 x 25 dimension
-    departure_omega = calc_omega(departureElevation, departureAzimuth, normalizedAntDistance)
+    departure_omega = calc_omega(
+        departureElevation, departureAzimuth, normalizedAntDistance
+    )
     arrival_omega = calc_omega(arrivalElevation, arrivalAzimuth, normalizedAntDistance)
 
     rangeTx_x = np.arange(number_Tx_antennasX)
@@ -68,20 +84,29 @@ def getNarrowBandUPAMIMOChannel(departureElevation,departureAzimuth,arrivalEleva
     rangeRx_x = np.arange(number_Rx_antennasX)
     rangeRx_y = np.arange(number_Rx_antennasY)
     for ray_i in range(numRays):
-        #departure
-        vecx = np.exp(1j * departure_omega[0,ray_i] * rangeTx_x)
-        vecy = np.exp(1j * departure_omega[1,ray_i] * rangeTx_y)
+        # departure
+        vecx = np.exp(1j * departure_omega[0, ray_i] * rangeTx_x)
+        vecy = np.exp(1j * departure_omega[1, ray_i] * rangeTx_y)
         departure_vec = np.matrix(np.kron(vecy, vecx))
-        #arrival
-        vecx = np.exp(1j * arrival_omega[0,ray_i] * rangeRx_x)
-        vecy = np.exp(1j * arrival_omega[1,ray_i] * rangeRx_y)
+        # arrival
+        vecx = np.exp(1j * arrival_omega[0, ray_i] * rangeRx_x)
+        vecy = np.exp(1j * arrival_omega[1, ray_i] * rangeRx_y)
         arrival_vec = np.matrix(np.kron(vecy, vecx))
 
         H = H + path_complexGains[ray_i] * arrival_vec.conj().T * departure_vec
     return H
 
-def getNarrowBandULAMIMOChannel(azimuths_tx, azimuths_rx, p_gainsdB, number_Tx_antennas, number_Rx_antennas,
-                                normalizedAntDistance=0.5, angleWithArrayNormal=0, pathPhases=None):
+
+def getNarrowBandULAMIMOChannel(
+    azimuths_tx,
+    azimuths_rx,
+    p_gainsdB,
+    number_Tx_antennas,
+    number_Rx_antennas,
+    normalizedAntDistance=0.5,
+    angleWithArrayNormal=0,
+    pathPhases=None,
+):
     """This .m file uses ULAs at both TX and RX.
 
     - assumes one beam per antenna element
@@ -113,33 +138,51 @@ def getNarrowBandULAMIMOChannel(azimuths_tx, azimuths_rx, p_gainsdB, number_Tx_a
     path_gain = np.power(10, gain_dB / 10)
     path_gain = np.sqrt(path_gain)
 
-    #generate uniformly distributed random phase in radians
+    # generate uniformly distributed random phase in radians
     if pathPhases is None:
-        pathPhases = 2*np.pi * np.random.rand(len(path_gain))
+        pathPhases = 2 * np.pi * np.random.rand(len(path_gain))
     else:
-        #convert from degrees to radians
+        # convert from degrees to radians
         pathPhases = np.deg2rad(pathPhases)
 
-    #include phase information, converting gains in complex-values
+    # include phase information, converting gains in complex-values
     path_complexGains = path_gain * np.exp(-1j * pathPhases)
 
     # recall that in the narrowband case, the time-domain H is the same as the
     # frequency-domain H
     for i in range(m):
         # at and ar are row vectors (using Python's matrix)
-        at = np.matrix(arrayFactorGivenAngleForULA(number_Tx_antennas, azimuths_tx[i], normalizedAntDistance,
-                                                   angleWithArrayNormal))
-        ar = np.matrix(arrayFactorGivenAngleForULA(number_Rx_antennas, azimuths_rx[i], normalizedAntDistance,
-                                                   angleWithArrayNormal))
-        H = H + path_complexGains[i] * ar.conj().T * at  # outer product of ar Hermitian and at
+        at = np.matrix(
+            arrayFactorGivenAngleForULA(
+                number_Tx_antennas,
+                azimuths_tx[i],
+                normalizedAntDistance,
+                angleWithArrayNormal,
+            )
+        )
+        ar = np.matrix(
+            arrayFactorGivenAngleForULA(
+                number_Rx_antennas,
+                azimuths_rx[i],
+                normalizedAntDistance,
+                angleWithArrayNormal,
+            )
+        )
+        H = (
+            H + path_complexGains[i] * ar.conj().T * at
+        )  # outer product of ar Hermitian and at
     factor = (np.linalg.norm(path_complexGains) / np.sum(path_complexGains)) * np.sqrt(
-        number_Rx_antennas * number_Tx_antennas)  # scale channel matrix
+        number_Rx_antennas * number_Tx_antennas
+    )  # scale channel matrix
     H *= factor  # normalize for compatibility with Anum's Matlab code
 
     return H
 
-def arrayFactorGivenAngleForULA(numAntennaElements, theta, normalizedAntDistance=0.5, angleWithArrayNormal=0):
-    '''
+
+def arrayFactorGivenAngleForULA(
+    numAntennaElements, theta, normalizedAntDistance=0.5, angleWithArrayNormal=0
+):
+    """
     Calculate array factor for ULA for angle theta. If angleWithArrayNormal=0
     (default),the angle is between the input signal and the array axis. In
     this case when theta=0, the signal direction is parallel to the array
@@ -151,15 +194,22 @@ def arrayFactorGivenAngleForULA(numAntennaElements, theta, normalizedAntDistance
     References:
     http://www.waves.utoronto.ca/prof/svhum/ece422/notes/15-arrays2.pdf
     Book by Balanis, book by Tse.
-    '''
+    """
     indices = np.arange(numAntennaElements)
-    if (angleWithArrayNormal == 1):
-        arrayFactor = np.exp(-1j * 2 * np.pi * normalizedAntDistance * indices * np.sin(theta))
+    if angleWithArrayNormal == 1:
+        arrayFactor = np.exp(
+            -1j * 2 * np.pi * normalizedAntDistance * indices * np.sin(theta)
+        )
     else:  # default
-        arrayFactor = np.exp(-1j * 2 * np.pi * normalizedAntDistance * indices * np.cos(theta))
+        arrayFactor = np.exp(
+            -1j * 2 * np.pi * normalizedAntDistance * indices * np.cos(theta)
+        )
     return arrayFactor / np.sqrt(numAntennaElements)  # normalize to have unitary norm
 
-def calc_rx_power(departure_angle, arrival_angle, p_gain, antenna_number, frequency=6e10):
+
+def calc_rx_power(
+    departure_angle, arrival_angle, p_gain, antenna_number, frequency=6e10
+):
     """This .m file uses a m*m SQUARE UPA, so the antenna number at TX, RX will be antenna_number^2.
 
     - antenna_number^2 number of element arrays in TX, same in RX
@@ -220,6 +270,7 @@ def calc_rx_power(departure_angle, arrival_angle, p_gain, antenna_number, freque
     t1 = wt.conj().T * H * wr
     return t1
 
+
 def getDFTOperatedChannel(H, number_Tx_antennas, number_Rx_antennas):
     wt = dft_codebook(number_Tx_antennas)
     wr = dft_codebook(number_Rx_antennas)
@@ -227,56 +278,63 @@ def getDFTOperatedChannel(H, number_Tx_antennas, number_Rx_antennas):
     # dictionaryOperatedChannel2 = wr.T * H * wt.conj()
     return dictionaryOperatedChannel  # return equivalent channel after precoding and combining
 
+
 def getCodebookOperatedChannel(H, Wt, Wr):
-    if Wr is None: #only 1 antenna at Rx, and Wr was passed as None
+    if Wr is None:  # only 1 antenna at Rx, and Wr was passed as None
         return H * Wt
-    if Wt is None: #only 1 antenna at Tx
+    if Wt is None:  # only 1 antenna at Tx
         return Wr.conj().T * H
-    return Wr.conj().T * H * Wt # return equivalent channel after precoding and combining
+    return (
+        Wr.conj().T * H * Wt
+    )  # return equivalent channel after precoding and combining
+
 
 def readUPASteeringCodebooks(inputFileName):
-    '''Read data created by
+    """Read data created by
     D:/gits/lasse/software/mimo-matlab/upa_codebook_creation.m
     Used the Kronecker to represent the matrix for a pair of wx and wy as a single array
     %See  John Brady, Akbar Sayeed, Millimeter-Wave MIMO Transceivers - Chap 10
     %Section 10.5
     %http://dune.ece.wisc.edu/wp-uploads/2015/11/main_sayeed_brady.pdf
-    '''
-    #saved redundant information on Wx and Wy in case they help later
-    #Used on Matlab:
-    #save(outputFileName,'W','codebook','Wx','Wy','Nax','Nay','-v6')
-    arrayName = 'W'
+    """
+    # saved redundant information on Wx and Wy in case they help later
+    # Used on Matlab:
+    # save(outputFileName,'W','codebook','Wx','Wy','Nax','Nay','-v6')
+    arrayName = "W"
     codevectors = read_matlab_array_from_mat(inputFileName, arrayName)
-    arrayName = 'Nax'
+    arrayName = "Nax"
     Nx = read_matlab_array_from_mat(inputFileName, arrayName)
-    arrayName = 'Nay'
+    arrayName = "Nay"
     Ny = read_matlab_array_from_mat(inputFileName, arrayName)
-    arrayName = 'codebook'
+    arrayName = "codebook"
     codevectorsIndices = read_matlab_array_from_mat(inputFileName, arrayName)
     return codevectors, int(Nx), int(Ny), codevectorsIndices
+
 
 def test_channel():
     # RESULTS_DIR='/Users/psb/ownCloud/Projects/DNN Wireless/rwi-3d-modeling/restuls/run00000'
     # RESULTS_DIR = 'D:/insitedata/pc128/example_working/restuls/run00000'
-    RESULTS_DIR='D:/github/5gm-rwi-simulation/example/results_new_simuls/run00003/'
+    RESULTS_DIR = "D:/github/5gm-rwi-simulation/example/results_new_simuls/run00003/"
     antenna_number = 2
     BASE_DIR = os.path.dirname(os.path.realpath(__file__))
-    P2MPATHS_FILE = os.path.join(RESULTS_DIR, 'study', 'model.paths.t001_01.r002.p2m')
-    print('Reading file', P2MPATHS_FILE)
-    with open(P2MPATHS_FILE, 'rb') as infile:
+    P2MPATHS_FILE = os.path.join(RESULTS_DIR, "study", "model.paths.t001_01.r002.p2m")
+    print("Reading file", P2MPATHS_FILE)
+    with open(P2MPATHS_FILE, "rb") as infile:
         paths = P2mPaths(P2MPATHS_FILE)
-        #get info for a given receiver
-        rec_i = 0 #first receiver is 0 here and 1 in the database
-        departure_angles = paths.get_departure_angle_ndarray(rec_i+1)
-        arrival_angles = paths.get_arrival_angle_ndarray(rec_i+1)
-        p_gainsdB = paths.get_p_gain_ndarray(rec_i+1)
-        abs_cir_file_name = P2MPATHS_FILE.replace("paths", "cir")  # name for the impulse response (cir) file
+        # get info for a given receiver
+        rec_i = 0  # first receiver is 0 here and 1 in the database
+        departure_angles = paths.get_departure_angle_ndarray(rec_i + 1)
+        arrival_angles = paths.get_arrival_angle_ndarray(rec_i + 1)
+        p_gainsdB = paths.get_p_gain_ndarray(rec_i + 1)
+        abs_cir_file_name = P2MPATHS_FILE.replace(
+            "paths", "cir"
+        )  # name for the impulse response (cir) file
         if os.path.exists(abs_cir_file_name) == False:
-            print('ERROR: could not find file ', abs_cir_file_name)
-            print('Did you ask InSite to generate the impulse response (cir) file?')
+            print("ERROR: could not find file ", abs_cir_file_name)
+            print("Did you ask InSite to generate the impulse response (cir) file?")
             exit(-1)
-        cir = P2mCir(abs_cir_file_name) #read impulse response with phases
-        pathPhasesInDegrees = cir.get_phase_ndarray(rec_i+1)
+        cir = P2mCir(abs_cir_file_name)  # read impulse response with phases
+        pathPhasesInDegrees = cir.get_phase_ndarray(rec_i + 1)
 
     if True:  # enable for debugging with fixed angles
         ad = (np.pi / 4) * 180 / np.pi  # in degrees, as InSite provides
@@ -298,30 +356,46 @@ def test_channel():
     number_Tx_antennas = antenna_number * antenna_number
     normalizedAntDistance = 0.5
 
-    t1 = getNarrowBandUPAMIMOChannel(departure_angles, arrival_angles, p_gainsdB, number_Tx_antennas,
-                                     number_Rx_antennas, normalizedAntDistance=0.5)
+    t1 = getNarrowBandUPAMIMOChannel(
+        departure_angles,
+        arrival_angles,
+        p_gainsdB,
+        number_Tx_antennas,
+        number_Rx_antennas,
+        normalizedAntDistance=0.5,
+    )
     t1 = np.abs(t1)
-    t2 = getNarrowBandULAMIMOChannel(azimuths_tx, azimuths_rx, p_gainsdB, number_Tx_antennas, number_Rx_antennas,
-                                     normalizedAntDistance=0.5, angleWithArrayNormal=1, pathPhases=pathPhasesInDegrees)
-    print('MSE 1 = ', np.mean(np.power(np.abs(t1 - t1_py), 2)))
-    print('MSE 2 = ', np.mean(np.power(np.abs(t1 - t2), 2)))
+    t2 = getNarrowBandULAMIMOChannel(
+        azimuths_tx,
+        azimuths_rx,
+        p_gainsdB,
+        number_Tx_antennas,
+        number_Rx_antennas,
+        normalizedAntDistance=0.5,
+        angleWithArrayNormal=1,
+        pathPhases=pathPhasesInDegrees,
+    )
+    print("MSE 1 = ", np.mean(np.power(np.abs(t1 - t1_py), 2)))
+    print("MSE 2 = ", np.mean(np.power(np.abs(t1 - t2), 2)))
     # print(t2)
     t2 = np.abs(t2)
     (bestRxIndex, bestTxIndex) = np.unravel_index(np.argmax(t2, axis=None), t2.shape)
-    print('bestRxIndex: ', bestRxIndex, ' and bestTxIndex: ', bestTxIndex)
+    print("bestRxIndex: ", bestRxIndex, " and bestTxIndex: ", bestTxIndex)
 
     stop = datetime.datetime.today()
     print(stop - start)
     # print(t1_py)
 
+
 def test_readUPASteeringCodebooks():
-    #inputFileName = 'D:/gits/lasse/software/mimo-matlab/upa_codebook_12x12.mat'
-    inputFileName = 'D:/gits/lasse/software/mimo-matlab/upa_codebook_2x3.mat'
+    # inputFileName = 'D:/gits/lasse/software/mimo-matlab/upa_codebook_12x12.mat'
+    inputFileName = "D:/gits/lasse/software/mimo-matlab/upa_codebook_2x3.mat"
     codevectors, Nx, Ny = readUPASteeringCodebooks(inputFileName)
-    print('#1 = ', codevectors[:,0])
-    print('#4 = ', codevectors[:,3])
+    print("#1 = ", codevectors[:, 0])
+    print("#4 = ", codevectors[:, 3])
     print(Nx, Ny)
 
-if __name__ == '__main__':
-    #test_channel()
+
+if __name__ == "__main__":
+    # test_channel()
     test_readUPASteeringCodebooks()

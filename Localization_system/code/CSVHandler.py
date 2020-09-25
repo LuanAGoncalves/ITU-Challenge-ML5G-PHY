@@ -35,7 +35,9 @@ class CSVHandler:
         with open(filename) as csvfile:
             reader = csv.DictReader(csvfile)
             coordinates_train = []
+            context_train = []
             coordinates_test = []
+            context_test = []
 
             for row in reader:
                 isValid = row[
@@ -44,7 +46,9 @@ class CSVHandler:
                 if isValid == "V":  # check if the channel is valid
                     if int(row["EpisodeID"]) <= limitEp:
                         coordinates_train.append([float(row["x"]), float(row["y"])])
+                        context_train.append(0 if row["LOS"] == "LOS=0" else 1)
                     if int(row["EpisodeID"]) > limitEp:
                         coordinates_test.append([float(row["x"]), float(row["y"])])
+                        context_test.append(0 if row["LOS"] == "LOS=0" else 1)
 
-        return coordinates_train, coordinates_test
+        return coordinates_train, context_train, coordinates_test, context_test

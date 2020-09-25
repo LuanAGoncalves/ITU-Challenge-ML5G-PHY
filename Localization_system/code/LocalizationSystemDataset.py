@@ -8,7 +8,7 @@
 import numpy as np
 import os
 
-from builtins import print
+# from builtins import print
 
 from mimo_channels import getNarrowBandULAMIMOChannel, getDFTOperatedChannel
 from processCoordinates import processCoordinates
@@ -40,7 +40,12 @@ def dataset_generation(cfg_file):
         else:
             cfg[item.attrib["name"]] = item.text
 
-    limit = processCoordinates(cfg["data_folder"], cfg["dataset"])
+    limit = processCoordinates(
+        cfg["data_folder"],
+        cfg["dataset"],
+        [cfg["rsu_x"], cfg["rsu_y"], cfg["rsu_z"]],
+        [cfg["area_x_l"], cfg["area_y_l"], cfg["area_x_r"], cfg["area_y_r"]],
+    )
 
     if not os.path.exists(cfg["outputFolder"]):
         os.makedirs(cfg["outputFolder"])
@@ -199,7 +204,14 @@ def dataset_generation(cfg_file):
     # print("alloutputs shape = ", allOutputs.shape)
     mimoChannels_test = allOutputs[limit:]
     mimoChannels_train = allOutputs[:limit]
-    print("alloutputs shape = ", allOutputs.shape, "train = ", mimoChannels_train.shape, "test = ", mimoChannels_test.shape)
+    print(
+        "alloutputs shape = ",
+        allOutputs.shape,
+        "train = ",
+        mimoChannels_train.shape,
+        "test = ",
+        mimoChannels_test.shape,
+    )
 
     npz_name_train = cfg["outputFolder"] + "mimoChannels_train" + ".npz"
     np.savez(npz_name_train, output_classification=mimoChannels_train)

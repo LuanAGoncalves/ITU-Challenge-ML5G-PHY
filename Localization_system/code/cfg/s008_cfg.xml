@@ -9,4 +9,11 @@
     <item name="number_Tx_antennas">32</item>
     <item name="number_Rx_antennas">8</item>
     <item name="numEpisodes">2086</item>
+    <item name="rsu_x">746.0</item>
+    <item name="rsu_y">560.0</item>
+    <item name="rsu_z">4.0</item>
+    <item name="area_x_l">744</item>
+    <item name="area_y_l">429</item>
+    <item name="area_x_r">767</item>
+    <item name="area_y_r">679</item>
 </data>
