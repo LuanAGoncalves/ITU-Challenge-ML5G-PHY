@@ -214,11 +214,11 @@ def dataset_generation(cfg_file):
     )
 
     npz_name_train = cfg["outputFolder"] + "mimoChannels_train" + ".npz"
-    np.savez(npz_name_train, output_classification=mimoChannels_train)
+    np.savez(npz_name_train, output_classification=np.array(mimoChannels_train).real)
     print("Saved file ", npz_name_train)
 
     npz_name_validation = cfg["outputFolder"] + "mimoChannels_validation" + ".npz"
-    np.savez(npz_name_validation, output_classification=mimoChannels_test)
+    np.savez(npz_name_validation, output_classification=np.array(mimoChannels_test).real)
     print("Saved file ", npz_name_validation)
 
     print(
