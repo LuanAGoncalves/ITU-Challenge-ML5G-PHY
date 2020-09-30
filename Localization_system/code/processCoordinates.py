@@ -47,10 +47,10 @@ def processCoordinates(data_folder, dataset, rsu_coord, area_shp):
 
     # train
     np.savez(inputDataDir + "coord_train" + ".npz", coordinates=coordinates_train)
-    np.savez(inputDataDir + "context_train" + ".npz", coordinates=context_train)
+    np.savez(inputDataDir + "context_train" + ".npz", context=context_train)
     # test
     np.savez(inputDataDir + "coord_validation" + ".npz", coordinates=coordinates_test)
-    np.savez(inputDataDir + "context_test" + ".npz", coordinates=context_test)
+    np.savez(inputDataDir + "context_test" + ".npz", context=context_test)
 
     print("Coord npz files saved!")
 

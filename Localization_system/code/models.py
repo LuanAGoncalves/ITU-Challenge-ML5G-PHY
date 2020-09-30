@@ -21,6 +21,6 @@ def build_default_mlp(n_inputs):
     )
 
     x = model(inputs)
-    outputs = tf.keras.activations.relu(x, threshold=-1, max_value=1)
+    outputs = tf.keras.activations.relu(x, threshold=-1)
 
     return Model(inputs=inputs, outputs=outputs)
