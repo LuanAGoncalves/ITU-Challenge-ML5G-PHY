@@ -8,15 +8,17 @@ def build_default_mlp(n_inputs):
 
     model = tf.keras.Sequential(
         [
-            Dense(256, activation="relu", name="layer1"),
+            Dense(n_inputs, activation="relu", name="layer1"),
             Dropout(0.3),
-            Dense(256, activation="relu", name="layer2"),
+            Dense(n_inputs * 2, activation="relu", name="layer2"),
             Dropout(0.3),
-            Dense(256, activation="relu", name="layer3"),
+            Dense(n_inputs * 4, activation="relu", name="layer3"),
             Dropout(0.3),
-            Dense(256, activation="relu", name="layer4"),
+            Dense(n_inputs * 2, activation="relu", name="layer4"),
             Dropout(0.3),
-            Dense(2, activation=None, name="layer4"),
+            Dense(n_inputs, activation="relu", name="layer5"),
+            Dropout(0.3),
+            Dense(2, activation=None, name="layer6"),
         ]
     )
 

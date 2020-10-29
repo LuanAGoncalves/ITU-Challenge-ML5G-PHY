@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras.callbacks import Callback, ModelCheckpoint
+from tensorflow.keras.callbacks import Callback, ModelCheckpoint, ReduceLROnPlateau
 from tensorflow.keras import metrics
 from tensorflow.keras.losses import categorical_crossentropy
 from tensorflow.keras.optimizers import Adadelta, Adam
@@ -30,14 +30,17 @@ def prepare_dataset(dataset_folder):
         else dataset_folder + "/context_train.npz"
     )["context"]
 
-    idx = (context==1)
+    idx = context == 1
 
     channels = channels[idx]
     coord = coord[idx]
 
     n, _, _ = channels.shape
+    channels = channels.reshape((n, -1))
+    channels -= channels.mean(axis=0)
+    channels /= channels.std(axis=0)
 
-    return channels.reshape((n, -1)), coord
+    return channels, coord
 
 
 if __name__ == "__main__":
@@ -88,10 +91,13 @@ if __name__ == "__main__":
 
     model = build_default_mlp(256)
     model.compile(
-        tf.keras.optimizers.Adam(learning_rate=args.lr),
-        loss="mse",
-        metrics=["mae"],
+        tf.keras.optimizers.Adam(learning_rate=args.lr), loss="mse", metrics=["mae"],
     )
+
+    reduce_lr = ReduceLROnPlateau(
+        monitor="val_loss", factor=0.1, patience=10
+    )
+    print(channels.min(), channels.max())
 
     # checkpoint = ModelCheckpoint(
     #     './models/model.h5',
@@ -108,9 +114,13 @@ if __name__ == "__main__":
         batch_size=args.batch_size,
         epochs=args.epochs,
         verbose=1,
-        callbacks=None,
+        callbacks=[reduce_lr],
         validation_split=0.2,
         shuffle=True,
         initial_epoch=0,
         workers=1,
     )
+
+    preds = model.predict(channels)
+    exam = np.hstack((coords, preds))
+    print(exam[:5, :])

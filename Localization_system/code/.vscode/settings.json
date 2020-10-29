@@ -1,6 +1,6 @@
 {
-    "python.formatting.provider": "black",
     "python.pythonPath": "/home/uluyac/dev/miniconda3/envs/ml/bin/python",
     "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "python.formatting.provider": "black"
 }
